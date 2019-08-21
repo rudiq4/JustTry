@@ -13,7 +13,7 @@ class Main(tk.Frame):
     def init_main(self):
         toolbar = tk.Frame(bg='#d7d8e0', bd=2)
         toolbar.pack(side=tk.TOP, fill=tk.X)
-
+        # Buttons
         self.add_img = tk.PhotoImage(file='add.gif')
         btn_open_dialog = tk.Button(toolbar, text='Додати', command=self.open_dialog, bg='#d7d8e0', bd=0,
                                     compound=tk.TOP, image=self.add_img)
@@ -24,6 +24,11 @@ class Main(tk.Frame):
                                     compound=tk.TOP, image=self.update_img)
         btn_edit_dialog.pack(side=tk.LEFT)
 
+        self.delete_img = tk.PhotoImage(file='delete.gif')
+        btn_delete = tk.Button(toolbar, text='Видалити', command=self.delete_records, bg='#d7d8e0', bd=0,
+                               compound=tk.TOP, image=self.delete_img)
+        btn_delete.pack(side=tk.LEFT)
+        # Tree
         self.tree = ttk.Treeview(self, columns=("ID", "description", "cost", "total"), height=15, show='headings')
 
         self.tree.column('ID', width=30, anchor=tk.CENTER)
@@ -34,7 +39,7 @@ class Main(tk.Frame):
         self.tree.heading('ID', text='ID')
         self.tree.heading('description', text='Найменування')
         self.tree.heading('cost', text='Дохід/Витрата')
-        self.tree.heading('total', text='Вартість')
+        self.tree.heading('total', text='Значення')
 
         self.tree.pack()
 
@@ -52,6 +57,12 @@ class Main(tk.Frame):
         self.db.c.execute('''SELECT * FROM finance''')  # execute - SQL request
         [self.tree.delete(i) for i in self.tree.get_children()]
         [self.tree.insert('', 'end', values=row) for row in self.db.c.fetchall()]
+
+    def delete_records(self):
+        for item in self.tree.selection():
+            self.db.c.execute('''DELETE FROM finance WHERE id=?''', (self.tree.set(item, '#1'),))
+            self.db.conn.commit()
+            self.view_records()
 
     def open_dialog(self):
         Child()
@@ -109,8 +120,8 @@ class Update(Child):  # inherit
         btn_edit = ttk.Button(self, text='Редагувати')
         btn_edit.place(x=205, y=170)
         btn_edit.bind('<Button-1>', lambda event: self.view.update_record(self.entry_description.get(),
-                                                                         self.combobox.get(),
-                                                                         self.entry_money.get()))
+                                                                          self.combobox.get(),
+                                                                          self.entry_money.get()))
         self.btn_ok.destroy()
 
 
