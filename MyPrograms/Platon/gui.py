@@ -15,22 +15,7 @@ cities = [city for city in cities_code.keys()]
 letters_list = ['A', 'B', 'C', 'E', 'H', 'I', 'K', 'M', 'O', 'P', 'T', 'X']
 
 
-def plate_generator(region):
-    first_letters = cities_code.get(region)
-    last_letters = ''
-    number = ''
-    for ix in range(4):
-        digit = str(random.randint(1, 9))
-        number += digit
-    for ix in range(2):
-        letter = random.choice(letters_list)
-        last_letters += letter
-    full_number = first_letters + number + last_letters
-    print('Номер {} успішно згенерований'.format(full_number))
-
-
 class Main(tk.Frame):
-    ___version___ = 0.2
 
     def __init__(self, root):
         super().__init__(root)
@@ -39,8 +24,12 @@ class Main(tk.Frame):
         self.view_records()
 
     def init_main(self):
+        self.version = '0.2'
         toolbar = tk.Frame(bg='#3895D3', bd=3)
         toolbar.pack(side=tk.RIGHT, fill=tk.BOTH)
+        '''labels'''
+        version_label = ttk.Label(toolbar, text='Version: ' + self.version, compound=tk.TOP)
+        version_label.pack(side=tk.BOTTOM)
         '''buttons'''
         self.add_img = tk.PhotoImage(file='add.gif')
         btn_open_dialog = tk.Button(toolbar, command=self.open_dialog, bg='#1261A0', bd=0,
@@ -57,9 +46,7 @@ class Main(tk.Frame):
                                compound=tk.TOP, image=self.delete_img)
         btn_delete.pack(side=tk.TOP)
 
-        '''tree(plate, brand, model, region)'''
-
-        self.tree = ttk.Treeview(self, columns=("ID", "plate", "brand", "model", "region"), height=15, show='headings')
+        self.tree = ttk.Treeview(self, columns=("ID", "plate", "brand", "model", "region"), height=25, show='headings')
 
         self.tree.column('ID', width=30, anchor=tk.CENTER)
         self.tree.column('plate', width=150, anchor=tk.CENTER)
@@ -113,6 +100,7 @@ class Child(tk.Toplevel):
         self.title('Добавити номер')
         self.geometry('400x230+400+300')
         self.resizable(False, False)
+        default_number = 0000
 
         label_model = ttk.Label(self, text="Область: ")
         label_model.place(x=50, y=30)
@@ -126,34 +114,43 @@ class Child(tk.Toplevel):
         self.entry_region = ttk.Combobox(self, values=cities)
         self.entry_region.current(0)
         self.entry_region.place(x=150, y=30)
-        self.entry_plate = ttk.Entry(self)
-        self.entry_plate.place(x=150, y=60)
+        # self.plate = self.plate_generator()  # default value
         self.entry_brand = ttk.Entry(self)
         self.entry_brand.place(x=150, y=90)
         self.entry_model = ttk.Entry(self)
         self.entry_model.place(x=150, y=120)
 
-        # self.combobox = ttk.Combobox(self, values=[u'Дохід', u'Витрата'])
-        # self.combobox.current(0)  # default value
-        # self.combobox.place(x=200, y=80)
-
         btn_cancel = ttk.Button(self, text='Закрити', command=self.destroy)
         btn_cancel.place(x=200, y=170)
 
-        btn_generate = ttk.Button(self, text='Згенерувати')
+        btn_generate = ttk.Button(self, text='Згенерувати', command=self.plate_generator)
         btn_generate.place(x=300, y=60)
 
         self.btn_ok = ttk.Button(self, text='Добавити')
         self.btn_ok.place(x=120, y=170)
-        self.btn_ok.bind('<Button-1>', lambda event: self.view.records(self.entry_plate.get(),
-                                                                       self.entry_brand.get(), self.entry_model.get(),
-                                                                       self.entry_region.get()))
+        self.btn_ok.bind('<Button-1>', lambda event: self.view.records(
+            self.plate, self.entry_brand.get(), self.entry_model.get(), self.entry_region.get()))
 
         self.grab_set()
         self.focus_set()
 
+    def plate_generator(self):
+        last_letters = ''
+        number = ''
+        for ix in range(4):
+            digit = str(random.randint(1, 9))
+            number += digit
+        for ix in range(2):
+            letter = random.choice(letters_list)
+            last_letters += letter
+        full_number = number + last_letters
+        label_plate = ttk.Label(self, text=full_number)
+        label_plate.place(x=150, y=60)
+        self.plate = full_number
+        return full_number
 
-class Update(Child):  # inherit
+
+class Update(Child):
     def __init__(self):
         super().__init__()
         self.init_edit()
@@ -163,7 +160,7 @@ class Update(Child):  # inherit
         self.title('Редагувати')
         btn_edit = ttk.Button(self, text='Редагувати')
         btn_edit.place(x=120, y=170)
-        btn_edit.bind('<Button-1>', lambda event: self.view.update_record(self.entry_plate.get(),
+        btn_edit.bind('<Button-1>', lambda event: self.view.update_record(self.plate,
                                                                           self.entry_brand.get(),
                                                                           self.entry_model.get(),
                                                                           self.entry_region.get()))
@@ -186,7 +183,7 @@ class DB:
 
 
 if __name__ == '__main__':
-    root = tk.Tk()
+    root = tk.Tk()  # генеральне вікно
     db = DB()
     app = Main(root)
     app.pack()
