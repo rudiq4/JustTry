@@ -1,9 +1,37 @@
 import tkinter as tk
 from tkinter import ttk
 import sqlite3
+import random
+
+cities_code = {
+    'Волинська': 'АС', 'Львівська': 'ВС', 'Закарпатська': 'АО', 'Рівненська': 'ВК', 'Тернопільська': 'ВО',
+    'Івано-Франківська': 'АТ', 'Житомирська': 'АМ', 'Вінницька': 'АВ', 'Чернівецька': 'СЕ', 'Київ': 'АА',
+    'Київська': 'АІ', 'Черкаська': 'СА', 'Миколаївська': 'ВЕ', 'Одеська': 'ВН',
+    'Чернігівська': 'СВ', 'Полтавська': 'ВІ', 'Кіровоградська': 'ВА', 'Херсонська': 'ВТ', 'Крим': 'АК',
+    'Севастополь': 'СН', 'Харківська': 'АХ', 'Дніпропетровська': 'АЕ', 'Запорізька': 'АР', 'Луганська': 'ВВ',
+    'Донецька': 'АН'
+}
+cities = [city for city in cities_code.keys()]
+letters_list = ['A', 'B', 'C', 'E', 'H', 'I', 'K', 'M', 'O', 'P', 'T', 'X']
+
+
+def plate_generator(region):
+    first_letters = cities_code.get(region)
+    last_letters = ''
+    number = ''
+    for ix in range(4):
+        digit = str(random.randint(1, 9))
+        number += digit
+    for ix in range(2):
+        letter = random.choice(letters_list)
+        last_letters += letter
+    full_number = first_letters + number + last_letters
+    print('Номер {} успішно згенерований'.format(full_number))
 
 
 class Main(tk.Frame):
+    ___version___ = 0.2
+
     def __init__(self, root):
         super().__init__(root)
         self.init_main()
@@ -11,7 +39,6 @@ class Main(tk.Frame):
         self.view_records()
 
     def init_main(self):
-
         toolbar = tk.Frame(bg='#3895D3', bd=3)
         toolbar.pack(side=tk.RIGHT, fill=tk.BOTH)
         '''buttons'''
@@ -26,7 +53,7 @@ class Main(tk.Frame):
         btn_edit_dialog.pack(side=tk.TOP)
 
         self.delete_img = tk.PhotoImage(file='delete.gif')
-        btn_delete = tk.Button(toolbar,command=self.delete_records, bg='#1261A0', bd=0,
+        btn_delete = tk.Button(toolbar, command=self.delete_records, bg='#1261A0', bd=0,
                                compound=tk.TOP, image=self.delete_img)
         btn_delete.pack(side=tk.TOP)
 
@@ -87,32 +114,37 @@ class Child(tk.Toplevel):
         self.geometry('400x230+400+300')
         self.resizable(False, False)
 
-        label_plate = ttk.Label(self, text="Номер: ")
-        label_plate.place(x=50, y=50)
-        label_brand = ttk.Label(self, text="Марка: ")
-        label_brand.place(x=50, y=80)
-        label_model = ttk.Label(self, text="Модель: ")
-        label_model.place(x=50, y=110)
         label_model = ttk.Label(self, text="Область: ")
-        label_model.place(x=50, y=140)
+        label_model.place(x=50, y=30)
+        label_plate = ttk.Label(self, text="Номер: ")
+        label_plate.place(x=50, y=60)
+        label_brand = ttk.Label(self, text="Марка: ")
+        label_brand.place(x=50, y=90)
+        label_model = ttk.Label(self, text="Модель: ")
+        label_model.place(x=50, y=120)
 
+        self.entry_region = ttk.Combobox(self, values=cities)
+        self.entry_region.current(0)
+        self.entry_region.place(x=150, y=30)
         self.entry_plate = ttk.Entry(self)
-        self.entry_plate.place(x=200, y=50)
+        self.entry_plate.place(x=150, y=60)
         self.entry_brand = ttk.Entry(self)
-        self.entry_brand.place(x=200, y=80)
+        self.entry_brand.place(x=150, y=90)
         self.entry_model = ttk.Entry(self)
-        self.entry_model.place(x=200, y=110)
-        self.entry_region = ttk.Entry(self)
-        self.entry_region.place(x=200, y=140)
+        self.entry_model.place(x=150, y=120)
+
         # self.combobox = ttk.Combobox(self, values=[u'Дохід', u'Витрата'])
         # self.combobox.current(0)  # default value
         # self.combobox.place(x=200, y=80)
 
         btn_cancel = ttk.Button(self, text='Закрити', command=self.destroy)
-        btn_cancel.place(x=300, y=170)
+        btn_cancel.place(x=200, y=170)
+
+        btn_generate = ttk.Button(self, text='Згенерувати')
+        btn_generate.place(x=300, y=60)
 
         self.btn_ok = ttk.Button(self, text='Добавити')
-        self.btn_ok.place(x=220, y=170)
+        self.btn_ok.place(x=120, y=170)
         self.btn_ok.bind('<Button-1>', lambda event: self.view.records(self.entry_plate.get(),
                                                                        self.entry_brand.get(), self.entry_model.get(),
                                                                        self.entry_region.get()))
@@ -130,10 +162,11 @@ class Update(Child):  # inherit
     def init_edit(self):
         self.title('Редагувати')
         btn_edit = ttk.Button(self, text='Редагувати')
-        btn_edit.place(x=205, y=170)
+        btn_edit.place(x=120, y=170)
         btn_edit.bind('<Button-1>', lambda event: self.view.update_record(self.entry_plate.get(),
-                                                                       self.entry_brand.get(), self.entry_model.get(),
-                                                                       self.entry_region.get()))
+                                                                          self.entry_brand.get(),
+                                                                          self.entry_model.get(),
+                                                                          self.entry_region.get()))
         self.btn_ok.destroy()
 
 
