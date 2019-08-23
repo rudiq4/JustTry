@@ -24,7 +24,7 @@ class Main(tk.Frame):
         self.view_records()
 
     def init_main(self):
-        self.version = '0.2'
+        self.version = '0.3'
         toolbar = tk.Frame(bg='#3895D3', bd=3)
         toolbar.pack(side=tk.RIGHT, fill=tk.BOTH)
         '''labels'''
